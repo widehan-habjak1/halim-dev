@@ -1,9 +1,8 @@
-import time
+import time, random
 from rich.console import Console
 from rich.panel import Panel
 from rich.progress import track
 console = Console()
-
 
 class MyCalculator:
     def __init__(self):
@@ -59,8 +58,19 @@ class MyCalculator:
             if ask == 'y':
                 continue
             elif ask == 'n':
-                print('astaghfirullah bang')
+                print('Thank you for using our program - Dev said')
                 quit()
+            else:
+                print('?????')
+                break
 
+with console.status("[bold blue]Setting the environtment...", spinner='circle'):
+    time.sleep(random.randrange(1, 5))
+    console.log("Succeed!")
+time.sleep(0.1)
+with console.status("[bold blue]Loading the program...", spinner="dots"):
+    time.sleep(random.randrange(1, 5))
+    console.log("Succeed!")
+time.sleep(0.5)
 kalkulator = MyCalculator()
 kalkulator.run()
