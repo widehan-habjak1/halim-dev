@@ -1,6 +1,11 @@
 import time
+from rich.console import Console
+from rich.panel import Panel
+from rich.progress import track
+console = Console()
 
-class MyCalc:
+
+class MyCalculator:
     def __init__(self):
         pass
     
@@ -31,23 +36,31 @@ class MyCalc:
             return f'Error: {str(e)}'
     
     def run(self): # run the calculator
-        print('Welcome to my calculator!')
-        print('This calculator was made with class in Python.')
+        console.print(Panel('[bold]My Calculator', subtitle='v1.1', expand=False))
+        console.print('[italic]This calculator was made with class in Python.')
+        console.print('Calculation: +, -, *, /')
+        console.print("[bold blue]UPDATE -- UI enhanced")
         time.sleep(2)
         
         while True:
-            op = input('Enter the operations you need (+, -, *, /) ')
-            n = list(map(int, input('Put the numbers to calculate! (divide w/ space) ').split()))
-            
-            res = self.calculate(op, n)
-            print("The result: {}".format(res))
+            n = input("Start the calculation >").split()
+            if len(n) < 3:
+                print('Please input in valid ' \
+                'format: (number) (operation symbol) (number)')
+                break
+            n1 = int(n[0])
+            op = n[1]
+            n2 = int(n[2])
+            numbers = [n1, n2]
+            res = self.calculate(op, numbers)
+            console.print(Panel("{} {} {} = {}".format(n[0], n[1], n[2], res), expand=False))
+
             ask = input('Wanna calculate more? (y/n) ')
             if ask == 'y':
                 continue
-            else:
-                print('There you go, thanks for using our program.')
+            elif ask == 'n':
+                print('astaghfirullah bang')
                 quit()
 
-if __name__ == '__main__':
-    calc = MyCalc()
-    calc.run()
+kalkulator = MyCalculator()
+kalkulator.run()
