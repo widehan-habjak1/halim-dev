@@ -1,0 +1,562 @@
+/* Each algorithm phase has its own visual language. */
+.node {
+  width: calc(64px * var(--node-scale, 1));
+  height: calc(54px * var(--node-scale, 1));
+  transition: left .72s cubic-bezier(.22,.8,.25,1),
+              top .72s cubic-bezier(.35,.05,.65,.95),
+              filter .35s, scale .35s;
+}
+.node .crate { font-size: calc(17px * var(--node-scale, 1)); }
+.node .leaf { scale: var(--node-scale, 1); transform-origin: bottom center; }
+.node.focus { scale: calc(var(--node-scale, 1) * 1.12); }
+.node .crate small { scale: var(--node-scale, 1); transform-origin: center; }
+.node.rotated .crate { animation: crateTurn 1.15s ease; }
+.node.danger { animation: nodeWarning .32s ease-in-out infinite alternate; }
+
+@keyframes nodeWarning {
+  to { filter: drop-shadow(0 0 9px #ff7f57aa); }
+}
+
+/* A new value arrives as a seed, while its wooden home is assembled around it. */
+.node.born .crate {
+  overflow: visible;
+  transform-origin: center bottom;
+  animation: crateAssembly calc(1.3s / var(--playback-speed, 1)) cubic-bezier(.16,1,.3,1) both;
+}
+.node.born .leaf { animation: leafSprout calc(1.3s / var(--playback-speed, 1)) cubic-bezier(.16,1,.3,1) both; }
+.node.born .crate > span:first-child,
+.node.born .crate small { animation: storedValue calc(1.3s / var(--playback-speed, 1)) ease both; }
+.data-ball {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #17331d;
+  font: 800 12px DM Mono;
+  background: radial-gradient(circle at 34% 28%, #f4ffc0, #b9ee72 54%, #639b41 100%);
+  box-shadow: 0 0 0 4px #d9ff8b24, 0 0 18px #d5ff85a6;
+  z-index: 5;
+  animation: ballIntoCrate calc(1.3s / var(--playback-speed, 1)) cubic-bezier(.22,.72,.24,1) both;
+}
+
+@keyframes crateAssembly {
+  0% { opacity: 0; transform: translateY(14px) scale(.82,.76); }
+  55% { opacity: 1; transform: translateY(-2px) scale(1.025,1.04); }
+  78% { transform: translateY(1px) scale(.99,.99); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes leafSprout {
+  0%,48% { opacity: 0; scale: 0; }
+  76% { opacity: 1; scale: 1.12; }
+  100% { opacity: 1; scale: 1; }
+}
+@keyframes ballIntoCrate {
+  0% { opacity: 0; transform: translate(-50%, -82px) scale(.72); }
+  12% { opacity: 1; }
+  45% { transform: translate(-50%, -30px) scale(1); }
+  72% { opacity: 1; transform: translate(-50%, -50%) scale(.72); }
+  91%,100% { opacity: 0; transform: translate(-50%, -50%) scale(.12); }
+}
+@keyframes storedValue {
+  0%,72% { opacity: 0; transform: scale(.72); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* A glowing branch becomes a physical slide before every descent. */
+.slide-rail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  overflow: visible;
+  pointer-events: none;
+}
+.slide-rail path {
+  fill: none;
+  stroke: #d8ff87;
+  stroke-width: 3.2;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 5px #aef35f) drop-shadow(0 0 12px #74c947);
+}
+.slide-rail.compare path {
+  opacity: .26;
+  stroke-dasharray: 4 7;
+  animation: railPreview .9s ease both;
+}
+.slide-rail.slide path {
+  stroke-dasharray: 10 7;
+  animation: railFlow .85s linear infinite;
+}
+
+/* The tiny scale is anchored to the node being compared. */
+.node-scale {
+  --tilt: 0deg;
+  position: absolute;
+  width: 98px;
+  height: 58px;
+  transform: translate(-50%,-56%);
+  z-index: 8;
+  pointer-events: none;
+  filter: drop-shadow(0 0 8px #cfff84aa);
+  animation: scaleArrive .3s ease both;
+}
+.node-scale.left { --tilt: -10deg; }
+.node-scale.right { --tilt: 10deg; }
+.node-scale i {
+  position: absolute;
+  left: 47px;
+  top: 7px;
+  width: 4px;
+  height: 35px;
+  border-radius: 4px;
+  background: linear-gradient(#efffc2,#80b95b);
+}
+.node-scale b {
+  position: absolute;
+  left: 13px;
+  top: 9px;
+  width: 72px;
+  height: 4px;
+  border-radius: 4px;
+  background: #dcffa0;
+  box-shadow: 0 0 10px #c7ff78;
+  transform: rotate(var(--tilt));
+  transform-origin: center;
+  transition: transform .35s ease;
+}
+.node-scale em,.node-scale span {
+  position: absolute;
+  top: 14px;
+  width: 25px;
+  height: 11px;
+  border: 2px solid #bde87d;
+  border-top: 0;
+  border-radius: 0 0 50% 50%;
+  opacity: .72;
+}
+.node-scale em { left: 4px; }
+.node-scale span { right: 4px; }
+.node-scale.left em,.node-scale.right span {
+  background: #b8ef6e55;
+  box-shadow: 0 5px 16px #a9ec61;
+  opacity: 1;
+}
+.node-scale:after {
+  content: '';
+  position: absolute;
+  left: 37px;
+  top: 39px;
+  width: 24px;
+  height: 4px;
+  border-radius: 50%;
+  background: #92c56e;
+}
+
+.traveler.sliding {
+  transition: left 1.08s cubic-bezier(.22,.72,.28,1), top 1.08s cubic-bezier(.15,.5,.35,1);
+  animation: slideSpin 1.08s ease-in-out both;
+}
+
+.balance-spark {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  transform: translate(calc(-50% + 46px),-50%);
+  z-index: 7;
+  transition: left .6s ease, top .6s ease;
+  animation: fairyArrive .48s cubic-bezier(.2,.8,.25,1) both;
+}
+@keyframes fairyArrive {
+  0% { opacity: 0; scale: .35; }
+  68% { opacity: 1; scale: 1.14; }
+  100% { opacity: 1; scale: 1; }
+}
+.balance-spark i {
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #eaffb8;
+  box-shadow: 0 0 16px 7px #a9e879;
+}
+.balance-spark i:before,.balance-spark i:after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  width: 9px;
+  height: 6px;
+  border: 1px solid #efffd0;
+  border-bottom: 0;
+  border-radius: 100% 100% 0 0;
+  opacity: .92;
+  animation: fairyWing .32s ease-in-out infinite alternate;
+}
+.balance-spark i:before { right: 6px; transform-origin: right bottom; }
+.balance-spark i:after { left: 6px; transform-origin: left bottom; }
+.balance-spark b {
+  position: absolute;
+  inset: -8px;
+  border: 1px solid #cff99d;
+  border-radius: 50%;
+  animation: sapPulse .7s ease-out infinite;
+}
+
+.orbit {
+  position: absolute;
+  width: 150px;
+  height: 110px;
+  transform: translate(-50%,-50%);
+  z-index: 5;
+  pointer-events: none;
+  border: 2px dashed #f6bd65;
+  border-left-color: transparent;
+  border-radius: 50%;
+  filter: drop-shadow(0 0 9px #f6a93b);
+  opacity: .85;
+}
+.orbit span {
+  position: absolute;
+  right: -7px;
+  bottom: 8px;
+  color: #ffd882;
+  font-size: 35px;
+  line-height: 1;
+  text-shadow: 0 0 15px #ffad43;
+}
+.orbit.counter { transform: translate(-50%,-50%) scaleX(-1); }
+.orbit.counter span { transform: scaleX(-1); }
+.rotating .orbit { animation: orbitTurn 1.1s ease; }
+.rotating .ropes path { animation: ropeRebind 1.15s ease both; }
+
+@keyframes crateTurn {
+  0%,100% { rotate: 0deg; }
+  45% { rotate: -7deg; filter: brightness(1.25); }
+  70% { rotate: 5deg; }
+}
+@keyframes orbitTurn {
+  from { opacity: 0; rotate: -35deg; scale: .75; }
+  55% { opacity: 1; }
+  to { rotate: 325deg; scale: 1.05; opacity: .15; }
+}
+@keyframes ropeRebind {
+  0% { opacity: 1; stroke-dashoffset: 0; }
+  35% { opacity: .08; stroke-dashoffset: 18; }
+  100% { opacity: 1; stroke-dashoffset: 36; }
+}
+@keyframes sapPulse {
+  from { opacity: 1; scale: .45; }
+  to { opacity: 0; scale: 1.35; }
+}
+@keyframes fairyWing { to { transform: rotate(22deg) scaleX(.78); } }
+
+.crate .balance {
+  right: -12px;
+  left: auto;
+  top: -10px;
+  width: 27px;
+  height: 27px;
+  border-color: #fff0b3;
+  background: #f4dc91;
+  color: #243421;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.progress {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  min-width: 0;
+  height: 22px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  touch-action: pan-y;
+}
+.progress::-webkit-slider-runnable-track {
+  height: 5px;
+  border-radius: 4px;
+  background: linear-gradient(to right,#6fa553,#d0ed93 var(--progress),#294139 var(--progress));
+}
+.progress::-moz-range-track {
+  height: 5px;
+  border-radius: 4px;
+  background: #294139;
+}
+.progress::-moz-range-progress {
+  height: 5px;
+  border-radius: 4px;
+  background: linear-gradient(90deg,#6fa553,#d0ed93);
+}
+.progress::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -3.5px;
+  border: 0;
+  border-radius: 50%;
+  background: #dff6a3;
+  box-shadow: 0 0 12px #c7ef83;
+}
+.progress::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border: 0;
+  border-radius: 50%;
+  background: #dff6a3;
+  box-shadow: 0 0 12px #c7ef83;
+}
+.progress:focus-visible {
+  outline: 2px solid #dff6a3;
+  outline-offset: 3px;
+}
+@keyframes scaleArrive {
+  from { opacity: 0; scale: .65; translate: 0 -8px; }
+  to { opacity: 1; scale: 1; translate: 0 0; }
+}
+@keyframes railPreview {
+  from { stroke-dashoffset: 25; opacity: 0; }
+  to { stroke-dashoffset: 0; opacity: .26; }
+}
+@keyframes railFlow { to { stroke-dashoffset: -34; } }
+@keyframes slideSpin {
+  0% { rotate: 0deg; scale: 1; }
+  35% { rotate: 12deg; scale: 1.06; }
+  75% { rotate: -8deg; scale: .96; }
+  100% { rotate: 0deg; scale: 1; }
+}
+
+/* Rotation choreography: old branches dissolve while the new structure grows in. */
+.old-ropes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+.old-ropes path {
+  fill: none;
+  stroke: #d8b070;
+  stroke-width: 1.8;
+  stroke-dasharray: 4 3;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 4px #e5a85688);
+  animation: oldBranchRelease calc(1.25s / var(--playback-speed, 1)) ease forwards;
+}
+.rotating .ropes path.branch-growing {
+  stroke: #cba56b;
+  stroke-dasharray: 5 3;
+  animation: newBranchGrow calc(1.25s / var(--playback-speed, 1)) cubic-bezier(.2,.7,.25,1) both;
+}
+.rotating .node { transition: none; }
+.node.rotated .crate { animation: crateSettle calc(1.2s / var(--playback-speed, 1)) cubic-bezier(.2,.75,.2,1); }
+.node.rotated { animation-duration: calc(1.1s / var(--playback-speed, 1)); }
+.rotation-axis { animation-duration: calc(1.35s / var(--playback-speed, 1)); }
+.node.promoted { z-index: 7; filter: drop-shadow(0 0 18px #d7ff82); }
+.node.promoted .crate { border-color: #e5ff9c; }
+.node.pivot .crate { box-shadow: inset 0 0 0 2px #56391f, 0 0 20px #efa95855; }
+
+.rotation-axis {
+  position: absolute;
+  width: 88px;
+  height: 88px;
+  transform: translate(-50%,-50%);
+  z-index: 5;
+  pointer-events: none;
+  border-radius: 50%;
+  border: 1px solid #ddff9a44;
+  box-shadow: 0 0 30px #bdec6c22, inset 0 0 22px #bdec6c18;
+  animation: axisBreathe 1.35s ease both;
+}
+.rotation-axis i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  transform: translate(-50%,-50%);
+  background: #efffc0;
+  box-shadow: 0 0 15px 5px #bce86f;
+}
+.rotation-badge { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.rotation-badge strong { font: inherit; }
+.rotation-badge small { margin-top: 2px; color: #ffdca0; font: 600 9px DM Mono; letter-spacing: .5px; }
+
+@keyframes oldBranchRelease {
+  0% { opacity: .9; stroke-dashoffset: 0; }
+  100% { opacity: 0; stroke-dashoffset: 24; }
+}
+@keyframes newBranchGrow {
+  0%,24% { opacity: 0; stroke-dashoffset: 34; }
+  55% { opacity: .28; }
+  100% { opacity: 1; stroke-dashoffset: 0; }
+}
+@keyframes crateSettle {
+  0% { filter: brightness(1); }
+  52% { filter: brightness(1.3); }
+  78% { filter: brightness(1.05); }
+  100% { filter: brightness(1); }
+}
+@keyframes axisBreathe {
+  0% { opacity: 0; scale: .55; rotate: -24deg; }
+  35% { opacity: .95; scale: 1; }
+  75% { opacity: .55; scale: 1.08; rotate: 18deg; }
+  100% { opacity: 0; scale: 1.2; rotate: 28deg; }
+}
+
+/* Rotation is a brief forest-wide event, not a tiny status chip. */
+.stage.rotation-mode {
+  background:
+    radial-gradient(circle at 50% 47%, #be7b2f24 0, #8f4c1a16 27%, transparent 62%),
+    linear-gradient(180deg, #173427c7, #10251d9e);
+  border-color: #d59a4f8c;
+  box-shadow: inset 0 0 105px #e28b321c, 0 0 52px #d9892b24, 0 30px 80px #0004;
+  animation: rotationClimate 1.15s ease both;
+}
+
+.rotation-badge {
+  position: absolute;
+  left: 50%;
+  top: 67%;
+  width: 96px;
+  height: 96px;
+  transform: translate(-50%,-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #f3bd68;
+  border-radius: 22px 22px 27px 27px;
+  color: #fff1c7;
+  background:
+    linear-gradient(145deg, #9c5b25e8, #5b2c18ee),
+    repeating-linear-gradient(90deg, transparent 0 15px, #f2bd6d13 16px 18px);
+  box-shadow: inset 0 0 0 3px #4d241b7a, inset 0 10px 20px #ffd4871f, 0 0 0 7px #e8a54a12, 0 12px 32px #160b05a6;
+  backdrop-filter: blur(4px);
+}
+.rotation-badge strong {
+  position: relative;
+  z-index: 1;
+  font: 800 28px DM Mono, monospace;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 0 #3d1c14, 0 0 18px #ffd375a8;
+}
+.rotation-badge small {
+  position: relative;
+  z-index: 1;
+  margin-top: 7px;
+  color: #ffe1a7;
+  font: 700 10px DM Mono, monospace;
+  letter-spacing: 1px;
+}
+.rotation-symbol {
+  position: absolute;
+  top: 9px;
+  right: 11px;
+  color: #ffdf91;
+  font: 400 16px system-ui;
+  text-shadow: 0 0 12px #ffd06d;
+  animation: signSpin 1.2s linear infinite;
+}
+.badge-leaf {
+  position: absolute;
+  top: -8px;
+  width: 18px;
+  height: 11px;
+  border-radius: 100% 0 100% 0;
+  background: #b3df69;
+  box-shadow: 0 0 12px #b8ed76a8;
+}
+.badge-leaf.left { left: 25px; transform: rotate(20deg); }
+.badge-leaf.right { right: 25px; transform: scaleX(-1) rotate(20deg); }
+.rotation-badge.unbalanced { animation: announcementIn 1.05s cubic-bezier(.2,.8,.25,1) both; }
+.rotation-badge.rotate { animation: announcementHold 1.5s cubic-bezier(.2,.72,.25,1) both; }
+
+@keyframes rotationClimate {
+  0% { filter: saturate(1) brightness(1); }
+  38% { filter: saturate(1.35) brightness(1.08); }
+  100% { filter: saturate(1.1) brightness(1.02); }
+}
+@keyframes announcementIn {
+  0% { opacity: 0; scale: .42; rotate: -12deg; }
+  50% { opacity: 1; scale: 1.08; rotate: 2deg; }
+  100% { opacity: 1; scale: 1; rotate: 0deg; }
+}
+@keyframes announcementHold {
+  0% { opacity: 0; scale: .78; translate: 0 18px; }
+  20% { opacity: .96; scale: 1; translate: 0 0; }
+  72% { opacity: .9; scale: .92; }
+  100% { opacity: 0; scale: .72; translate: 0 -20px; }
+}
+@keyframes signSpin { to { rotate: 360deg; } }
+
+/* The highlighted parent-child rope becomes the rail used by one basic AVL rotation. */
+.rotation-rope {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 6;
+  overflow: visible;
+  pointer-events: none;
+}
+.rotation-rope path {
+  fill: none;
+  stroke: #f3df91;
+  stroke-width: 3.4;
+  stroke-linecap: round;
+  stroke-dasharray: 10 6;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 5px #f7c763) drop-shadow(0 0 14px #d99d3c);
+  animation: rotationRail calc(1.08s / var(--playback-speed, 1)) linear infinite,
+             rotationRailFade calc(1.65s / var(--playback-speed, 1)) ease both;
+}
+.rotation-rope marker path { fill: #f3df91; stroke: none; filter: none; }
+.rotating .ropes path.branch-growing { animation: newBranchGrow calc(1.25s / var(--playback-speed, 1)) cubic-bezier(.2,.7,.25,1) both; }
+.rotating .old-ropes path { animation: oldBranchRelease calc(1.25s / var(--playback-speed, 1)) ease forwards; }
+
+@keyframes rotationRail { to { stroke-dashoffset: -32; } }
+@keyframes rotationRailFade {
+  0%, 34% { opacity: 1; }
+  62% { opacity: .68; }
+  100% { opacity: 0; }
+}
+
+@media (max-width: 560px) {
+  .rotation-badge { width: 112px; height: 112px; border-radius: 24px; }
+  .rotation-badge strong { font-size: 28px; }
+}
+
+/* Compact corner indicator — the center announcement is intentionally disabled. */
+.rotation-badge {
+  left: auto;
+  right: 28px;
+  top: 24px;
+  width: 62px;
+  height: 62px;
+  transform: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #ffe5ac;
+  border: 1px solid #e5a851;
+  background: #6a3d1ed9;
+  box-shadow: 0 0 35px #ff9e3b55;
+  font: 800 18px DM Mono, monospace;
+  letter-spacing: 0;
+  backdrop-filter: none;
+}
+.rotation-badge.unbalanced { animation: danger .16s infinite alternate; }
+.rotation-badge.rotate { animation: spin .9s ease; }
